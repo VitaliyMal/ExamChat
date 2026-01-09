@@ -27,6 +27,8 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(new Intent(this, ChatActivity.class));
             finish();
             return;
+        } else {
+            setContentView(R.layout.activity_login);
         }
 
         etLogin = findViewById(R.id.etLogin);
