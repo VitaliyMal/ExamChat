@@ -2,8 +2,10 @@ package com.example.examchat;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -52,6 +54,7 @@ public class ChatActivity extends AppCompatActivity{
         Button btnSend = findViewById(R.id.btnSend);
 
         adapter = new MessageAdapter(messages);
+        //testDataDisplay();
         rvMessages.setLayoutManager(new LinearLayoutManager(this));
         rvMessages.setAdapter(adapter);
 
@@ -62,23 +65,83 @@ public class ChatActivity extends AppCompatActivity{
         btnSend.setOnClickListener(v -> sendMessage());
     }
 
-    private void loadMessages(){
-        RetrofitClient.getApiService().getAllMessages(userLogin).enqueue(new Callback<MessageResponse>() {
+    private void testDataDisplay() {
+        // Создаем тестовые данные
+        List<Message> testMessages = new ArrayList<>();
+
+        Message testMsg1 = new Message();
+        testMsg1.setOwner("Test");
+        testMsg1.setText("Тестовое сообщение 1");
+        testMsg1.setTime("2026-01-09 00:00:00");
+
+        Message testMsg2 = new Message();
+        testMsg2.setOwner("Test2");
+        testMsg2.setText("Тестовое сообщение 2");
+        testMsg2.setTime("2026-01-09 00:01:00");
+
+        testMessages.add(testMsg1);
+        testMessages.add(testMsg2);
+
+        // Пробуем отобразить
+        adapter.updateMessages(testMessages);
+        Log.d("ChatActivity", "Тестовые данные добавлены: " + testMessages.size() + " сообщений");
+
+        // Проверяем, виден ли RecyclerView
+        if (rvMessages.getVisibility() != View.VISIBLE) {
+            rvMessages.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void loadMessages() {
+        swipeRefresh.setRefreshing(true);
+
+        RetrofitClient.getApiService().getAllMessages(userLogin).enqueue(new Callback<List<Message>>() {
             @Override
-            public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
+            public void onResponse(Call<List<Message>> call, Response<List<Message>> response) {
                 swipeRefresh.setRefreshing(false);
-                if(response.isSuccessful() && response.body() != null){
-                    adapter.updateMessages(response.body().getMessages());
-                    rvMessages.scrollToPosition(messages.size()-1);
+
+                Log.d("ChatActivity", "Ответ от сервера получен, код: " + response.code());
+
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Message> messageList = response.body();
+                    Log.d("ChatActivity", "Получено сообщений с сервера: " + messageList.size());
+
+                    // ВАЖНО: Проверяем, что список не пустой
+                    if (messageList != null && !messageList.isEmpty()) {
+                        // Обновляем адаптер
+                        adapter.updateMessages(messageList);
+
+                        // Прокручиваем к последнему сообщению
+                        rvMessages.scrollToPosition(messageList.size() - 1);
+
+                        // Логируем для отладки
+                        Log.d("ChatActivity", "Адаптер обновлен с " + messageList.size() + " сообщениями");
+                        for (int i = 0; i < Math.min(3, messageList.size()); i++) {
+                            Message msg = messageList.get(i);
+                            Log.d("ChatActivity", "Сообщение " + i + ": " + msg.getOwner() + ": " + msg.getText());
+                        }
+                    } else {
+                        Log.d("ChatActivity", "Список сообщений с сервера пуст");
+                        Toast.makeText(ChatActivity.this, "Нет сообщений", Toast.LENGTH_SHORT).show();
+                    }
                 } else {
-                    Toast.makeText(ChatActivity.this, "Ошибка загрузки", Toast.LENGTH_SHORT).show();
+                    Log.e("ChatActivity", "Ошибка ответа: " + response.code());
+                    if (response.errorBody() != null) {
+                        try {
+                            Log.e("ChatActivity", "Тело ошибки: " + response.errorBody().string());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    Toast.makeText(ChatActivity.this, "Ошибка загрузки: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onFailure(Call<MessageResponse> call, Throwable t) {
+            public void onFailure(Call<List<Message>> call, Throwable t) {
                 swipeRefresh.setRefreshing(false);
-                Toast.makeText(ChatActivity.this, "Ошибка сети", Toast.LENGTH_SHORT).show();
+                Log.e("ChatActivity", "Сетевая ошибка: " + t.getMessage());
+                Toast.makeText(ChatActivity.this, "Ошибка сети: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -126,12 +189,14 @@ public class ChatActivity extends AppCompatActivity{
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_logout) {
-            SharedPrefManager.getInstance(this).clearUserData();
+            // 1. Выход из системы (очистка данных)
+            SharedPrefManager.getInstance(this).logout();
 
+            // 2. Возвращаемся на экран логина, закрывая текущий
             Intent intent = new Intent(this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
-            finish();
+            finish(); // Закрываем ChatActivity
 
             return true;
         }

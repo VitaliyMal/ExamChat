@@ -9,7 +9,7 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
+        android:background="@color/deep_sky_blue"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
@@ -22,7 +22,8 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvMessages"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:scrollbars="vertical" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
@@ -51,7 +52,7 @@
             style="@style/ButtonStyle"
             android:id="@+id/btnSend"
             android:layout_width="wrap_content"
-            android:layout_height="48dp"
+            android:layout_height="60dp"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:text="Отправить" />

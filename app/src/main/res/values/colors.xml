@@ -2,4 +2,13 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <!-- Ваш новый цвет -->
+    <color name="deep_sky_blue">#00BFFF</color>
+
+    <!-- Можно также добавить более темные/светлые оттенки для состояний -->
+    <color name="deep_sky_blue_dark">#0099CC</color>
+    <color name="deep_sky_blue_light">#66D9FF</color>
+
+    <!-- Существующие цвета остаются -->
+    <color name="purple_200">#FFBB86FC</color>
 </resources>

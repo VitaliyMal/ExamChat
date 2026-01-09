@@ -1,5 +1,7 @@
 package com.example.examchat;
 
+import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
@@ -9,10 +11,10 @@ import retrofit2.http.Query;
 public interface ApiService {
 
     @GET("/all-messages")
-    Call<MessageResponse> getAllMessages(@Query("login") String login);
+    Call<List<Message>> getAllMessages(@Query("login") String login);
 
     @POST("/all-messages")
-    Call<MessageResponse> getMessagesAfterTime(@Body MessagesAfterTimeRequest request);
+    Call<List<Message>> getMessagesAfterTime(@Body MessagesAfterTimeRequest request);
 
     @POST("/sign-in")
     Call<SimpleResponse> signIn(@Body AuthRequest authRequest);

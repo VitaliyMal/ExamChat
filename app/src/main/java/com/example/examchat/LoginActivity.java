@@ -9,6 +9,10 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 
+import com.google.gson.Gson;
+
+import java.io.IOException;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -26,9 +30,7 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(new Intent(this, ChatActivity.class));
             finish();
             return;
-        } //else {
-            //setContentView(R.layout.activity_login);
-        //}
+        }
 
         setContentView(R.layout.activity_login);
 
@@ -57,13 +59,32 @@ public class LoginActivity extends AppCompatActivity {
         RetrofitClient.getApiService().signIn(authRequest).enqueue(new Callback<SimpleResponse>() {
             @Override
             public void onResponse(Call<SimpleResponse> call, Response<SimpleResponse> response) {
-                if(response.isSuccessful() && response.body() != null) {
-                    SharedPrefManager.getInstance(LoginActivity.this)
-                            .saveUserData(login, "");
+                // ВАЖНО: response.isSuccessful() вернет false для кодов 400, 500 и т.д.
+                if (response.isSuccessful() && response.body() != null) {
+                    // Успешная регистрация (200 OK)
+                    SharedPrefManager.getInstance(LoginActivity.this).saveUserData(login, "");
                     startActivity(new Intent(LoginActivity.this, ChatActivity.class));
                     finish();
                 } else {
-                    tvError.setText("Ошибка авторизации");
+                    // Ошибка (400, 500 и т.д.)
+                    String errorMessage = "Неизвестная ошибка";
+                    if (response.errorBody() != null) {
+                        try {
+                            // Пытаемся распарсить тело ошибки как JSON
+                            SimpleResponse errorResponse = new Gson().fromJson(response.errorBody().charStream(), SimpleResponse.class);
+                            errorMessage = errorResponse.getMessage();
+                        } catch (Exception e) {
+                            // Если не JSON, читаем как текст
+                            try {
+                                errorMessage = response.errorBody().string();
+                            } catch (IOException ioException) {
+                                ioException.printStackTrace();
+                            }
+                        }
+                    } else {
+                        errorMessage = "Ошибка " + response.code();
+                    }
+                    tvError.setText(errorMessage); // Показываем ошибку пользователю
                 }
             }
 
@@ -89,13 +110,32 @@ public class LoginActivity extends AppCompatActivity {
         RetrofitClient.getApiService().signUp(authRequest).enqueue(new Callback<SimpleResponse>() {
             @Override
             public void onResponse(Call<SimpleResponse> call, Response<SimpleResponse> response) {
+                // ВАЖНО: response.isSuccessful() вернет false для кодов 400, 500 и т.д.
                 if (response.isSuccessful() && response.body() != null) {
-                    SharedPrefManager.getInstance(LoginActivity.this)
-                            .saveUserData(login, name);
+                    // Успешная регистрация (200 OK)
+                    SharedPrefManager.getInstance(LoginActivity.this).saveUserData(login, name);
                     startActivity(new Intent(LoginActivity.this, ChatActivity.class));
                     finish();
                 } else {
-                    tvError.setText("Ошибка регистрации");
+                    // Ошибка (400, 500 и т.д.)
+                    String errorMessage = "Неизвестная ошибка";
+                    if (response.errorBody() != null) {
+                        try {
+                            // Пытаемся распарсить тело ошибки как JSON
+                            SimpleResponse errorResponse = new Gson().fromJson(response.errorBody().charStream(), SimpleResponse.class);
+                            errorMessage = errorResponse.getMessage();
+                        } catch (Exception e) {
+                            // Если не JSON, читаем как текст
+                            try {
+                                errorMessage = response.errorBody().string();
+                            } catch (IOException ioException) {
+                                ioException.printStackTrace();
+                            }
+                        }
+                    } else {
+                        errorMessage = "Ошибка " + response.code();
+                    }
+                    tvError.setText(errorMessage); // Показываем ошибку пользователю
                 }
             }
 

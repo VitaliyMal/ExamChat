@@ -1,15 +1,45 @@
 package com.example.examchat;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder>{
+    private static final String TAG = "MessageAdapter"; // Добавьте логирование
     private List<Message> messages;
+
+    public void updateMessages(List<Message> newMessages) {
+        Log.d(TAG, "Обновление адаптера, новых сообщений: " + (newMessages != null ? newMessages.size() : 0));
+
+        if (messages == null) {
+            messages = new ArrayList<>();
+        }
+
+        messages.clear();
+        if (newMessages != null) {
+            messages.addAll(newMessages);
+        }
+
+        // Убедитесь, что вызываете notifyDataSetChanged в UI потоке
+        runOnUiThreadIfNeeded(() -> notifyDataSetChanged());
+    }
+
+    private void runOnUiThreadIfNeeded(Runnable action) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            action.run();
+        } else {
+            new Handler(Looper.getMainLooper()).post(action);
+        }
+    }
     public MessageAdapter(List<Message> messages){
         this.messages = messages;
     }
@@ -35,11 +65,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         return messages.size();
     }
 
-    public void updateMessages(List<Message> newMessage){
-        messages.clear();
-        messages.addAll(newMessage);
-        notifyDataSetChanged();
-    }
+    //public void updateMessages(List<Message> newMessage){
+      //  messages.clear();
+      //  messages.addAll(newMessage);
+      //  notifyDataSetChanged();
+    //}
 
     static class MessageViewHolder extends RecyclerView.ViewHolder {
         TextView tvOwner, tvText, tvTime;

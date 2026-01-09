@@ -37,7 +37,7 @@ public class SharedPrefManager {
         return sharedPreferences.getString(KEY_LOGIN, null);
     }
 
-    public String getName(){ // не используется
+    public String getName(){
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getString(KEY_NAME, null);
     }
@@ -47,20 +47,20 @@ public class SharedPrefManager {
         return sharedPreferences.getBoolean(KEY_IS_LOGGED_IN, false);
     }
 
-    public void logout(){ // не используется
+    public void logout(){
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.clear();
         editor.apply();
     }
 
-    public boolean hasUserData(){ // не используется
+    public boolean hasUserData(){
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         return  sharedPreferences.contains(KEY_LOGIN) &&
                 sharedPreferences.contains(KEY_IS_LOGGED_IN);
     }
 
-    public void clearUserData(){ // не используется
+    public void clearUserData(){
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.remove(KEY_LOGIN);
