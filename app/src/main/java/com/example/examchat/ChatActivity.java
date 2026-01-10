@@ -158,6 +158,8 @@ public class ChatActivity extends AppCompatActivity{
             @Override
             public void onResponse(Call<SimpleResponse> call, Response<SimpleResponse> response) {
                 if(response.isSuccessful() && response.body() != null){
+                    String successMessage = response.body().getMessage();
+                    Toast.makeText(ChatActivity.this, successMessage, Toast.LENGTH_SHORT).show();
                     etMessage.setText("");
                     loadMessages();
                 } else if (response.code() == 400) {

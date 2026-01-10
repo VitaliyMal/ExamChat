@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -61,6 +62,8 @@ public class LoginActivity extends AppCompatActivity {
             public void onResponse(Call<SimpleResponse> call, Response<SimpleResponse> response) {
                 // ВАЖНО: response.isSuccessful() вернет false для кодов 400, 500 и т.д.
                 if (response.isSuccessful() && response.body() != null) {
+                    String successMessage = response.body().getMessage();
+                    Toast.makeText(LoginActivity.this, successMessage, Toast.LENGTH_LONG).show();
                     // Успешная регистрация (200 OK)
                     SharedPrefManager.getInstance(LoginActivity.this).saveUserData(login, "");
                     startActivity(new Intent(LoginActivity.this, ChatActivity.class));
@@ -112,6 +115,8 @@ public class LoginActivity extends AppCompatActivity {
             public void onResponse(Call<SimpleResponse> call, Response<SimpleResponse> response) {
                 // ВАЖНО: response.isSuccessful() вернет false для кодов 400, 500 и т.д.
                 if (response.isSuccessful() && response.body() != null) {
+                    String successMessage = response.body().getMessage();
+                    Toast.makeText(LoginActivity.this, successMessage, Toast.LENGTH_LONG).show();
                     // Успешная регистрация (200 OK)
                     SharedPrefManager.getInstance(LoginActivity.this).saveUserData(login, name);
                     startActivity(new Intent(LoginActivity.this, ChatActivity.class));
