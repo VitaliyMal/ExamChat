@@ -34,6 +34,13 @@
         android:padding="8dp"
         android:gravity="center_vertical">
 
+        <Button
+            android:id="@+id/btnPickDate"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@android:drawable/ic_menu_my_calendar"
+            android:contentDescription="Выбрать дату" />
+
         <EditText
             style="@style/EditTextStyle"
             android:id="@+id/etMessage"

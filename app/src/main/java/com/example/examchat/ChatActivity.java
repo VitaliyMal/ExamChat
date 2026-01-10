@@ -1,5 +1,7 @@
 package com.example.examchat;
 
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -7,7 +9,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,8 +24,11 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Calendar;
+import java.util.Locale;
 
 public class ChatActivity extends AppCompatActivity{
     private RecyclerView rvMessages;
@@ -30,6 +37,8 @@ public class ChatActivity extends AppCompatActivity{
     private MessageAdapter adapter;
     private List<Message> messages = new ArrayList<>();
     private String userLogin;
+    private Calendar selectedDateTime;
+    private Button btnPickDate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,17 +61,147 @@ public class ChatActivity extends AppCompatActivity{
         etMessage = findViewById(R.id.etMessage);
         swipeRefresh = findViewById(R.id.swipeRefresh);
         Button btnSend = findViewById(R.id.btnSend);
+        btnPickDate = findViewById(R.id.btnPickDate);
 
         adapter = new MessageAdapter(messages);
         //testDataDisplay();
         rvMessages.setLayoutManager(new LinearLayoutManager(this));
         rvMessages.setAdapter(adapter);
 
+        // Инициализируем календарь текущей датой/временем
+        selectedDateTime = Calendar.getInstance();
         loadMessages();
 
         swipeRefresh.setOnRefreshListener(this::loadMessages);
 
         btnSend.setOnClickListener(v -> sendMessage());
+
+        // Обработчик для кнопки выбора даты
+            btnPickDate.setOnClickListener(v -> showDateTimePicker());
+
+    }
+
+    private void showDateTimePicker() {
+        // Сначала выбираем дату
+        DatePickerDialog datePickerDialog = new DatePickerDialog(
+                this,
+                new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                        // Сохраняем выбранную дату
+                        selectedDateTime.set(Calendar.YEAR, year);
+                        selectedDateTime.set(Calendar.MONTH, month);
+                        selectedDateTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+
+                        // Затем выбираем время
+                        showTimePicker();
+                    }
+                },
+                selectedDateTime.get(Calendar.YEAR),
+                selectedDateTime.get(Calendar.MONTH),
+                selectedDateTime.get(Calendar.DAY_OF_MONTH)
+        );
+
+        datePickerDialog.show();
+    }
+
+    private void showTimePicker() {
+        TimePickerDialog timePickerDialog = new TimePickerDialog(
+                this,
+                new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                        // Сохраняем выбранное время
+                        selectedDateTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                        selectedDateTime.set(Calendar.MINUTE, minute);
+                        selectedDateTime.set(Calendar.SECOND, 0);
+
+                        // Форматируем дату в нужный формат и загружаем сообщения
+                        loadMessagesAfterSelectedTime();
+                    }
+                },
+                selectedDateTime.get(Calendar.HOUR_OF_DAY),
+                selectedDateTime.get(Calendar.MINUTE),
+                true // 24-часовой формат
+        );
+
+        timePickerDialog.show();
+    }
+
+    private void loadMessagesAfterSelectedTime() {
+        // Форматируем дату в строку "ГГГГ-ММ-ДД чч:мм:сс"
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        String formattedDateTime = sdf.format(selectedDateTime.getTime());
+
+        Toast.makeText(this, "Загрузка сообщений после " + formattedDateTime, Toast.LENGTH_SHORT).show();
+
+        loadMessagesAfterTime(formattedDateTime);
+    }
+
+    // Новый метод для загрузки сообщений после указанного времени
+    private void loadMessagesAfterTime(String dateTime) {
+        swipeRefresh.setRefreshing(true);
+
+        // Создаем запрос
+        MessagesAfterTimeRequest request = new MessagesAfterTimeRequest(userLogin, dateTime);
+
+        RetrofitClient.getApiService().getMessagesAfterTime(request).enqueue(new Callback<List<Message>>() {
+            @Override
+            public void onResponse(Call<List<Message>> call, Response<List<Message>> response) {
+                swipeRefresh.setRefreshing(false);
+
+                Log.d("ChatActivity", "Ответ после времени получен, код: " + response.code());
+
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Message> messageList = response.body();
+                    Log.d("ChatActivity", "Получено сообщений после времени: " + messageList.size());
+
+                    if (messageList != null && !messageList.isEmpty()) {
+                        // Обновляем адаптер новыми данными
+                        adapter.updateMessages(messageList);
+                        rvMessages.scrollToPosition(messageList.size() - 1);
+
+                        // Показываем уведомление
+                        Toast.makeText(ChatActivity.this,
+                                "Загружено " + messageList.size() + " сообщений после указанной даты",
+                                Toast.LENGTH_SHORT).show();
+
+                        // Логируем первые несколько сообщений для отладки
+                        for (int i = 0; i < Math.min(3, messageList.size()); i++) {
+                            Message msg = messageList.get(i);
+                            Log.d("ChatActivity", "Сообщение после времени " + i + ": " +
+                                    msg.getOwner() + ": " + msg.getText() + " в " + msg.getTime());
+                        }
+                    } else {
+                        Log.d("ChatActivity", "Нет сообщений после указанного времени");
+                        Toast.makeText(ChatActivity.this,
+                                "Нет сообщений после указанного времени",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Log.e("ChatActivity", "Ошибка ответа после времени: " + response.code());
+                    if (response.errorBody() != null) {
+                        try {
+                            Log.e("ChatActivity", "Тело ошибки: " + response.errorBody().string());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    Toast.makeText(ChatActivity.this,
+                            "Ошибка загрузки сообщений после времени: " + response.code(),
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Message>> call, Throwable t) {
+                swipeRefresh.setRefreshing(false);
+                Log.e("ChatActivity", "Сетевая ошибка при загрузке после времени: " + t.getMessage());
+                Toast.makeText(ChatActivity.this,
+                        "Ошибка сети: " + t.getMessage(),
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void testDataDisplay() {
