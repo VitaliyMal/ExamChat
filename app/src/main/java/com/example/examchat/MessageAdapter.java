@@ -29,7 +29,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messages.addAll(newMessages);
         }
 
-        // Убедитесь, что вызываете notifyDataSetChanged в UI потоке
         runOnUiThreadIfNeeded(() -> notifyDataSetChanged());
     }
 
@@ -64,12 +63,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     public int getItemCount(){
         return messages.size();
     }
-
-    //public void updateMessages(List<Message> newMessage){
-      //  messages.clear();
-      //  messages.addAll(newMessage);
-      //  notifyDataSetChanged();
-    //}
 
     static class MessageViewHolder extends RecyclerView.ViewHolder {
         TextView tvOwner, tvText, tvTime;

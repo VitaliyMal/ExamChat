@@ -13,7 +13,7 @@ public class RetrofitClient {
         if (retrofit == null) {
             // Создаем интерцептор для логирования
             HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-            logging.setLevel(HttpLoggingInterceptor.Level.BODY); // Будет логировать всё: заголовки и тело
+            logging.setLevel(HttpLoggingInterceptor.Level.BODY); // Логи на всё: заголовки и тело
 
             OkHttpClient client = new OkHttpClient.Builder()
                     .addInterceptor(logging)

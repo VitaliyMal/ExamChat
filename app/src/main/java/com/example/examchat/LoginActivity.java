@@ -60,20 +60,17 @@ public class LoginActivity extends AppCompatActivity {
         RetrofitClient.getApiService().signIn(authRequest).enqueue(new Callback<SimpleResponse>() {
             @Override
             public void onResponse(Call<SimpleResponse> call, Response<SimpleResponse> response) {
-                // ВАЖНО: response.isSuccessful() вернет false для кодов 400, 500 и т.д.
                 if (response.isSuccessful() && response.body() != null) {
                     String successMessage = response.body().getMessage();
                     Toast.makeText(LoginActivity.this, successMessage, Toast.LENGTH_LONG).show();
-                    // Успешная регистрация (200 OK)
                     SharedPrefManager.getInstance(LoginActivity.this).saveUserData(login, "");
                     startActivity(new Intent(LoginActivity.this, ChatActivity.class));
                     finish();
                 } else {
-                    // Ошибка (400, 500 и т.д.)
                     String errorMessage = "Неизвестная ошибка";
                     if (response.errorBody() != null) {
                         try {
-                            // Пытаемся распарсить тело ошибки как JSON
+                            // Парсим тело ошибки как JSON
                             SimpleResponse errorResponse = new Gson().fromJson(response.errorBody().charStream(), SimpleResponse.class);
                             errorMessage = errorResponse.getMessage();
                         } catch (Exception e) {
@@ -87,7 +84,7 @@ public class LoginActivity extends AppCompatActivity {
                     } else {
                         errorMessage = "Ошибка " + response.code();
                     }
-                    tvError.setText(errorMessage); // Показываем ошибку пользователю
+                    tvError.setText(errorMessage);
                 }
             }
 
@@ -113,20 +110,17 @@ public class LoginActivity extends AppCompatActivity {
         RetrofitClient.getApiService().signUp(authRequest).enqueue(new Callback<SimpleResponse>() {
             @Override
             public void onResponse(Call<SimpleResponse> call, Response<SimpleResponse> response) {
-                // ВАЖНО: response.isSuccessful() вернет false для кодов 400, 500 и т.д.
                 if (response.isSuccessful() && response.body() != null) {
                     String successMessage = response.body().getMessage();
                     Toast.makeText(LoginActivity.this, successMessage, Toast.LENGTH_LONG).show();
-                    // Успешная регистрация (200 OK)
                     SharedPrefManager.getInstance(LoginActivity.this).saveUserData(login, name);
                     startActivity(new Intent(LoginActivity.this, ChatActivity.class));
                     finish();
                 } else {
-                    // Ошибка (400, 500 и т.д.)
                     String errorMessage = "Неизвестная ошибка";
                     if (response.errorBody() != null) {
                         try {
-                            // Пытаемся распарсить тело ошибки как JSON
+                            // Парсим тело ошибки как JSON
                             SimpleResponse errorResponse = new Gson().fromJson(response.errorBody().charStream(), SimpleResponse.class);
                             errorMessage = errorResponse.getMessage();
                         } catch (Exception e) {
@@ -140,7 +134,7 @@ public class LoginActivity extends AppCompatActivity {
                     } else {
                         errorMessage = "Ошибка " + response.code();
                     }
-                    tvError.setText(errorMessage); // Показываем ошибку пользователю
+                    tvError.setText(errorMessage);
                 }
             }
 

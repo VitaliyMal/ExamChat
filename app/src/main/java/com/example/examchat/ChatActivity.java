@@ -82,7 +82,7 @@ public class ChatActivity extends AppCompatActivity{
     }
 
     private void showDateTimePicker() {
-        // Сначала выбираем дату
+        // Выбор даты
         DatePickerDialog datePickerDialog = new DatePickerDialog(
                 this,
                 new DatePickerDialog.OnDateSetListener() {
@@ -93,7 +93,7 @@ public class ChatActivity extends AppCompatActivity{
                         selectedDateTime.set(Calendar.MONTH, month);
                         selectedDateTime.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
-                        // Затем выбираем время
+                        // выбираем время
                         showTimePicker();
                     }
                 },
@@ -111,7 +111,6 @@ public class ChatActivity extends AppCompatActivity{
                 new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        // Сохраняем выбранное время
                         selectedDateTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
                         selectedDateTime.set(Calendar.MINUTE, minute);
                         selectedDateTime.set(Calendar.SECOND, 0);
@@ -138,11 +137,9 @@ public class ChatActivity extends AppCompatActivity{
         loadMessagesAfterTime(formattedDateTime);
     }
 
-    // Новый метод для загрузки сообщений после указанного времени
     private void loadMessagesAfterTime(String dateTime) {
         swipeRefresh.setRefreshing(true);
 
-        // Создаем запрос
         MessagesAfterTimeRequest request = new MessagesAfterTimeRequest(userLogin, dateTime);
 
         RetrofitClient.getApiService().getMessagesAfterTime(request).enqueue(new Callback<List<Message>>() {
@@ -161,12 +158,11 @@ public class ChatActivity extends AppCompatActivity{
                         adapter.updateMessages(messageList);
                         rvMessages.scrollToPosition(messageList.size() - 1);
 
-                        // Показываем уведомление
                         Toast.makeText(ChatActivity.this,
                                 "Загружено " + messageList.size() + " сообщений после указанной даты",
                                 Toast.LENGTH_SHORT).show();
 
-                        // Логируем первые несколько сообщений для отладки
+                        // Логирование первых несколько сообщений для отладки
                         for (int i = 0; i < Math.min(3, messageList.size()); i++) {
                             Message msg = messageList.get(i);
                             Log.d("ChatActivity", "Сообщение после времени " + i + ": " +
@@ -203,9 +199,8 @@ public class ChatActivity extends AppCompatActivity{
             }
         });
     }
-
+    //Отладка отображения
     private void testDataDisplay() {
-        // Создаем тестовые данные
         List<Message> testMessages = new ArrayList<>();
 
         Message testMsg1 = new Message();
@@ -221,11 +216,9 @@ public class ChatActivity extends AppCompatActivity{
         testMessages.add(testMsg1);
         testMessages.add(testMsg2);
 
-        // Пробуем отобразить
         adapter.updateMessages(testMessages);
         Log.d("ChatActivity", "Тестовые данные добавлены: " + testMessages.size() + " сообщений");
 
-        // Проверяем, виден ли RecyclerView
         if (rvMessages.getVisibility() != View.VISIBLE) {
             rvMessages.setVisibility(View.VISIBLE);
         }
@@ -245,15 +238,13 @@ public class ChatActivity extends AppCompatActivity{
                     List<Message> messageList = response.body();
                     Log.d("ChatActivity", "Получено сообщений с сервера: " + messageList.size());
 
-                    // ВАЖНО: Проверяем, что список не пустой
                     if (messageList != null && !messageList.isEmpty()) {
-                        // Обновляем адаптер
                         adapter.updateMessages(messageList);
 
                         // Прокручиваем к последнему сообщению
                         rvMessages.scrollToPosition(messageList.size() - 1);
 
-                        // Логируем для отладки
+                        // Лгоги для отладки
                         Log.d("ChatActivity", "Адаптер обновлен с " + messageList.size() + " сообщениями");
                         for (int i = 0; i < Math.min(3, messageList.size()); i++) {
                             Message msg = messageList.get(i);
@@ -337,7 +328,7 @@ public class ChatActivity extends AppCompatActivity{
             Intent intent = new Intent(this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
-            finish(); // Закрываем ChatActivity
+            finish();
 
             return true;
         }
