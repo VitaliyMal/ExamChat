@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder>{
-    private static final String TAG = "MessageAdapter"; // Добавьте логирование
+    private static final String TAG = "MessageAdapter";
     private List<Message> messages;
 
     public void updateMessages(List<Message> newMessages) {
